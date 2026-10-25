@@ -273,7 +273,7 @@ inline Ptr sugar(const List& l) {                                 // (define (f 
     if (sig.empty()) error("malformed define");
     return cell(List{sym("define"), sig[0], cell(List{sym("lambda"), cell(List(sig.begin() + 1, sig.end())), l[2]})});
 }
-inline Ptr vapply(const Ptr& f, const Ptr& args) {                // (apply f lst) = (f 'a1 'a2 ...), still a tail call
+inline Ptr lapply(const Ptr& f, const Ptr& args) {                // (apply f lst) = (f 'a1 'a2 ...), still a tail call
     List call{f};
     for (const Ptr& p : as<List>(args)) call.push_back(cell(List{sym("quote"), p}));
     return cell(call);
@@ -326,7 +326,7 @@ inline Ptr eval(Ptr x, EnvPtr env) {
             }
             if (head == "apply") {
                 if (l.size() != 3) error("malformed apply");
-                x = vapply(eval(l[1], env), eval(l[2], env));
+                x = lapply(eval(l[1], env), eval(l[2], env));
                 continue;
             }
             if (head == "do") {
@@ -508,7 +508,7 @@ inline Ptr load(const List& a, const EnvPtr& env) {               // (load "file
 inline Ptr list(const List& a, const EnvPtr&) {
     return cell(a);
 }
-inline bool vequal(const Ptr& a, const Ptr& b) {                  // structural; procedures by identity
+inline bool equalp(const Ptr& a, const Ptr& b) {                  // structural; procedures by identity
     Depth guard(2500);
     if (a->index() != b->index()) return false;
     if (is<Symbol>(a)) return as<Symbol>(a).name == as<Symbol>(b).name;
@@ -521,12 +521,12 @@ inline bool vequal(const Ptr& a, const Ptr& b) {                  // structural;
     if (is<List>(a)) {
         const List& x = as<List>(a);
         const List& y = as<List>(b);
-        return x.size() == y.size() && std::equal(x.begin(), x.end(), y.begin(), vequal);
+        return x.size() == y.size() && std::equal(x.begin(), x.end(), y.begin(), equalp);
     }
     return a == b;
 }
 inline Ptr isequal(const List& a, const EnvPtr&) {
-    return num(vequal(a[0], a[1]));
+    return num(equalp(a[0], a[1]));
 }
 inline Ptr len(const List& a, const EnvPtr&) {
     return num(length(a[0]));
