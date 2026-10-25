@@ -1,0 +1,8 @@
+.DS_Store
+src/.DS_Store
+examples/.DS_Store
+tests/.DS_Store
+vuza
+examples/tutorial_tmp.scm
+tests/coqre_tests_tmp.scm
+tests/core_tests_tmp_inner.scm
