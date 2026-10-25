@@ -22,7 +22,7 @@
 #include <vector>
 #include <string_view>
 
-#pragma mark AST
+// ------------ AST
 struct Cell;
 struct Env;
 using Ptr = std::shared_ptr<Cell>;
@@ -188,7 +188,7 @@ inline std::ostream& print(const Ptr& p, std::ostream& out, size_t limit) {
     return out << (limit && l.size() > limit ? " ...)" : ")");
 }
 
-#pragma mark Reader
+// ------------ Reader
 struct Reader {
     std::istream& in;
     size_t line = 1, token = 1, start = 1;
@@ -267,7 +267,7 @@ inline Ptr read(Reader& r) {
     return t.empty() ? nullptr : parse(r, t);
 }
 
-#pragma mark Evaluator
+// ------------ Evaluator
 inline Ptr sugar(const List& l) {                                 // (define (f x) body) = (define f (lambda (x) body))
     const List& sig = as<List>(l[1]);
     if (sig.empty()) error("malformed define");
@@ -368,7 +368,7 @@ inline Ptr call(const Ptr& f, const List& args, const EnvPtr& env) {
     return eval(as<Lambda>(f).body, frame(as<Lambda>(f), args));
 }
 
-#pragma mark Primitives
+// ------------ Primitives
 template<class Op, class Result> Result broadcast(const Array& x, const Array& y) {
     if (x.size() == y.size()) return Op()(x, y);
     if (x.size() == 1) return Op()(x[0], y);
@@ -583,7 +583,7 @@ inline Ptr display(const List& a, const EnvPtr&) {
     return nil();
 }
 
-#pragma mark Interface
+// ------------ Interface
 inline void def(const EnvPtr& env, const char* name, Ptr (*fn)(const List&, const EnvPtr&), const std::string& sig) {
     int min = 0, max = 0;                                       // in sig: "x" is required, "x?" optional, "..." any number more
     std::istringstream in(sig);
@@ -596,7 +596,7 @@ inline void def(const EnvPtr& env, const char* name, Ptr (*fn)(const List&, cons
     }
     env->vars[name] = cell(Prim{fn, sig, name, min, max});
 }
-inline EnvPtr globals() {                                         // the core; a library adds its primitives with def
+inline EnvPtr core() {                                         // the core; a library adds its primitives with def
     auto env = std::make_shared<Env>();
     def(env, "+", arith<std::plus<>, 0>, "x ...");
     def(env, "-", arith<std::minus<>, 0>, "x ...");
